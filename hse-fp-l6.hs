@@ -155,7 +155,7 @@ Such a combinator could automatically give us fmap2, fmap3, etc.
 --(<*>) :: f (a -> b) -> f a -> f b
 
 -- The laws:
--- pure id <*> x = x
+-- pure id <*> fx = fx
 -- pure (g $ x) = pure g <*> pure x
 ---- What are the types of these terms?
 -- fg <*> pure x = pure ($ x) <*> fg
@@ -277,14 +277,14 @@ x15' = sequenceA [[1,2,3],[],[4,5]]
 
 x16 = sequenceA [[3]]
 x17 = sequenceA [[2,3],[3]]
-x18 = sequenceA [[1,2,3],[2,3],[3]]
+x18 = sequenceA [[1,2,3],[5,6],[7,8]]
 
 cartsq' :: [a] -> [(a,a)]
 cartsq' xs = map (\[u,v] -> (u, v)) $ sequenceA [xs, xs]
 
 x19 = sequenceA [(+1),(*2),(^3)] $ 2
 
-x20 = sequenceA [Z [1,2,3], Z [4, 5], Z [6, 7]]
+x20 = sequenceA [Z [1,2,3], Z [4, 5], Z [6, 7], Z [10,11,12]]
 --cf. zip3
 
 mzip :: [[a]] -> [[a]]
@@ -294,7 +294,7 @@ mzip xss = getZipList . sequenceA $ map Z xss
 t5 = sequenceA [getChar,getChar]
 t5'= sequence [getChar,getChar]
 
-{-- Monads. --}
+{-- Monads --}
 
 --class Applicative m => Monad m where
 --    return :: a -> m a
@@ -304,6 +304,18 @@ t5'= sequence [getChar,getChar]
 -- return x >>= f = f x 
 -- mx >>= return = mx
 -- (mx >>= f) >>= g = mx >>= (\x -> (f x >>= g))
+
+-- cf. (=<<) :: (a -> m b) -> m a -> m b 
+{-- Discuss closure operators, monads in categories. --}
+{-- Monadic laws may be easily seen as commutative diagrams:
+    (=<<) f . return = f
+    (=<<) return = id
+    (=<<) g . (=<<) f = (=<<) ((=<<) g . f)
+--}
+
+-- cf. (>=>) :: (a -> m b) -> (b -> m c) -> (a -> m c)
+{-- Define Kleisli category with f (>=>) g = (=<<) g . f 
+    as composition and return as id. --}
 
 --instance Monad Maybe where
 ---- (>>=) :: Maybe a -> (a -> Maybe b) -> Maybe b
@@ -377,10 +389,17 @@ z8'' = [()] >> [4,5]
 z8''' = [(),()] >> [4,5]
 
 -- guard
+-- roughly speaking, consider a monoid structure on a monad (MonadPlus)...
+-- assume mempty >>= mx = mempty (as we have for [] and Maybe)
+
+-- guard :: Bool -> m ()
+-- guard True = return ()
+-- guard False = mempty
 
 filter'' p xs = xs >>= (\x -> guard (p x) >> return x)
 z9 = filter'' even [1,2,4,5,6,7,11]
 
+-- cf. z7
 z9' = do x <- [1,2,4,5,6,7,11]
          guard (even x)
          return x
@@ -388,11 +407,21 @@ z9' = do x <- [1,2,4,5,6,7,11]
 sdiv' :: Int -> Int -> Maybe Int
 sdiv' n m = do guard (m /= 0)
                return $ div n m
+
+sdiv'1 n m = guard (m /=0) >> return (div n m) 
                
 -- when
 
+-- when :: Bool -> m () -> m ()
+
+-- when True mx = mx
+-- when False mx = return ()
+
 sdiv'' n m = do when (m == 0) (putStrLn "Exception ahead!!!")
                 return $ div n m
+
+sdiv''1 n m =  when (m == 0) (putStrLn "Exception ahead!!!") >> return (div n m)
+
 
 --
 
@@ -402,7 +431,7 @@ filterM' p (x:xs) = do b <- p x
                        ys <- filterM' p xs
                        return (if b then x:ys else ys)
 
-z10 = [[2,3],[5],[1,2],[3],[4,7],[1]] :: [[Int]]
+z10 = [[2,3],[5],[1,2],[3],[],[4,7],[1]] :: [[Int]]
 
 shead :: [a] -> Maybe a
 shead xs = do guard $ not (null xs)
@@ -413,7 +442,7 @@ evenheads :: [[Int]] -> Maybe [[Int]]
 evenheads = filterM (\xs -> even <$> shead xs)
 
 powset :: [a] -> [[a]]
-powset = filterM (\x -> [True,False])
+powset = filterM (\_ -> [True,False])
 
 --
 
