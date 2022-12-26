@@ -12,22 +12,26 @@ type Ctr = Int
 
 newtype Upd a = U {getUpd :: Ctr -> (Ctr,a)}
 
+-- Upd a is isomorphic to State Int a
+
 --getUpd :: Upd a -> Ctr -> (Ctr,a)
 --getUpd (U f) = f
 
 instance Functor Upd where
 --fmap :: (a -> b) -> (Upd a) -> (Upd b)
 --    fmap f (U g) = U $ (\(c,x) -> (c, f x)) . g
-    fmap = liftM      
+     fmap f (U g) = U $ fmap f . g
+
+--    fmap = liftM      
 
 instance Applicative Upd where
 -- pure :: a -> Upd a
     pure x = U $ \c -> (c,x)
 -- <*> :: Upd (a -> b) -> Upd a -> Upd b
---    (<*>) (U f) (U g) = U $ \c -> let (c', h) = f c
---                                      (c'', x) = g c'
---                             in (c'', h x)
-    (<*>) = ap
+    (<*>) (U f) (U g) = U $ \c -> let (c', h) = f c
+                                      (c'', x) = g c'
+                                  in (c'', h x)
+--    (<*>) = ap
 
 
 instance Monad Upd where
@@ -43,6 +47,7 @@ incctr = U $ \c -> (c + 1, ())
 decctr :: Upd ()
 decctr = U $ \c -> (c - 1, ())
 
+-- cf. get and put
 getctr :: Upd Ctr
 getctr = U $ \c -> (c,c)
 
@@ -50,11 +55,14 @@ putctr :: Ctr -> Upd ()
 putctr n = U $ \_ -> (n,())
 
 a1 = putctr 0 >> incctr >> incctr >> decctr >> getctr
+-- cf. evalState and execState
 x1 = getUpd a1 2018
 
+-- cf. evalState
 usectr :: Ctr -> Upd a -> a
 usectr initval action = snd $ getUpd action initval
 
+-- cf. modify
 modctr :: (Ctr -> Ctr) -> Upd ()
 modctr f = U $ \c -> (f c, ())
 
@@ -64,8 +72,8 @@ x3 = usectr 2 (incctr >> modctr (*12) >> decctr >> getctr)
 ----
 
 {- Some parser: test a string if it is
- - "well-formed" by calculacting bracket
- - balance.
+ - "well-formed" vi calculacting its
+ - bracket balance.
  -}
 
 is_wf' :: String -> Upd Bool
@@ -169,7 +177,7 @@ doTests n sort = do s <- sequence ([1..100] >> [doTest n sort])
 
 qsort' :: (Ord a) => [a] -> Upd [a]
 qsort' [] = return []
-qsort' (x:xs) = do let (lesser', greater', len) = partition (<x) xs
+qsort' (x:xs) = do let (lesser', greater', len) = partition (<=x) xs
                    modctr (+len)            
                    lesser <- qsort' lesser'
                    greater <- qsort' greater'
