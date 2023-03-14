@@ -17,8 +17,8 @@ myList = [1,2,3] :: [Int]
 f2 = f1 f1 (+) (*) div 
 ab'c = f2 5 (-7)
 
--- abc = 6 
--- f3 = \x -> x x
+-- abc = 5 
+--f3 = \x -> x x
 --n4abc = f2 5 -7
 --A = 7
 
@@ -188,8 +188,8 @@ af6 = af2 (af2 id)
 -- (.) :: (b -> c) -> (a -> b) -> a -> c
 -- ($) :: (a -> b) -> a -> b 
 af7 = af2 . af2 $ id
-{-- Pattern matching --}
 
+{-- Pattern matching --}
 bf0 :: Bool -> String
 bf0 = \b -> case b of
                  True -> "yes"
@@ -211,6 +211,20 @@ bf1 n = case n of
             2           -> 4
             3           -> 3
             otherwise -> 2018
+
+-- Guards are allowed here to specify patterns further.
+-- See Haskell Report, 3.13.
+bf1' n = case n of
+            1              -> 5
+-- testing a Boolean expression for being True after we know n = 2 
+            2 | 2*n == 4   -> 4
+-- matching n with 4 (which fails) after we know n = 3 
+            3 | 4 <- n     -> 3
+-- 'otherwise' here is a local 'VARIABLE', not the defined term being equal
+-- to True (this term is shadowed in this context);
+-- mathcing with a variable always succedes so we have the desired effect we
+-- quite (misleadingly) signify with this name.
+            others_may_be_wiser -> 2018
 
 
 bf2 :: Int -> Int
@@ -236,10 +250,11 @@ bf5 :: [Int] -> [Int]
 bf5 [] = []
 bf5 [_,2,_] = [-2]
 bf5 [1,3,7] = [(-1)]
+-- as-pattern binds a local 'variable' to the expression being matched
 bf5 list@(x:xs) = x * sum xs : list
 
 bf6 :: Int -> Int -> Bool
-{-- Local variables are assigned some values during matching;
+{-- Local 'variables' are assigned some values during matching;
  - nothing more is done essentially.   --}
 --bf6 x x = True
 --bf6 _ _ = False
