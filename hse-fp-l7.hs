@@ -54,7 +54,7 @@ comp1 = let (_,st1) = push' 11 []    -- [11]
 -- all our operations' types follow the pattern:
 -- a1 -> a2 -> ... -> an -> Stack -> (b, Stack)
 -- Notice the head type: Stack -> (b, Stack);
--- this has a very clear meaning of 'change the stack and return b,
+-- this has a very clear meaning of 'change the stack and return b',
 -- which is similar to the imaginery type World -> (b, World)
 -- we used to explain IO b...
 

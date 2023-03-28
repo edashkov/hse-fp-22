@@ -382,7 +382,7 @@ m8 = Triplet 8 "Product" [1,2,3]
 -- the most primitive product type ("record")
 
 -- "a * b"
---data (,) = (,) a b
+--data (,) a b = (,) a b
 
 m8a = (2,'2') :: (Int,Char)
 
@@ -498,7 +498,7 @@ m14a = foldn (1:) [] infty
 
 -- Cf. the iterative construction for prdecessor 
 -- from the untyped lambda calculus
-npred = snd . foldn (\(n,x) -> (S n, n)) (Z,Z)
+npred = snd . foldn (\(n,_) -> (S n, n)) (Z,Z)
 
 nmlt m =  snd . (foldn (\(l, y) -> (l, nadd y l)) (m,Z))
 

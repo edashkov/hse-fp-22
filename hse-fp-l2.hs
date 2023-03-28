@@ -179,7 +179,8 @@ n11 = n10 - read s4
 
 af1 :: (a -> b -> c) -> (a -> b) -> a -> c
 af1 = \x y z ->  x z (y z)
-af2 = af1 (+) 
+--af2 :: (Num a) => (a -> a) -> a -> a 
+af2 = af1 (+)
 af3 = af2 id
 af4 = af2 (\x -> (3 * x + 1)^2)
 af5 = af2 (+1)
@@ -224,8 +225,7 @@ bf1' n = case n of
 -- to True (this term is shadowed in this context);
 -- mathcing with a variable always succedes so we have the desired effect we
 -- quite (misleadingly) signify with this name.
-            others_may_be_wiser -> 2018
-
+            others_may_be_wiser -> 2018 + others_may_be_wiser
 
 bf2 :: Int -> Int
 bf2 n = if n < 0 then
