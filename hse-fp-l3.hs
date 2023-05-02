@@ -608,6 +608,7 @@ myFac' = fix $ \fac n -> if n <= 0 then 1 else n * fac (n - 1)
 
 -- (2:) :: [Int] -> [Int]
 -- the infinite list of 2's
+-- myY (2:) -> 2 : (myY (2:)) -> 2 : 2 : (my (2:)) -> ...
 m16 = myY (2:)
 -- is the same as
 m16' = (2:) m16'
@@ -619,6 +620,9 @@ m16' = (2:) m16'
 -- if a is a funtional type, one can halt iterations using an argument:
 -- \f -> (\n -> if n == 0 then 1 else 2 * (f $ n - 1)) :: (Int -> Int) -> (Int -> Int)
 m17 = myY (\f -> (\n -> if n == 0 then 1 else 2 * (f $ n - 1))) $ 5
+-- let g = \f -> (\n -> if n == 0 then 1 else 2 * (f $ n - 1))
+-- myY g 2 -> g (myY g) 2 -(lazy evaluation!)-> 2 * (myY g 1) -> 2 * (g (myY g) 1) ->
+--  -> 2 * (2 * (myY g 0)) -> 2 * (2 * (g (myY g) 0)) -> 2 * (2 * 1) -> 4
 
 -- What do we have with types?
 

@@ -109,8 +109,8 @@ class Contravariant (f :: * -> *) where
 
 -- newtype Predicate a = Predicate {getPredicate :: a -> Bool}
 
--- instance Contravariant (Predicate a) where
---  contramap (a -> b) -> (Predicate b -> Predicate a)    
+-- instance Contravariant Predicate where
+--  contramap :: (a -> b) -> (Predicate b -> Predicate a)    
 --  contramap f (Predicate p) = Predicate (p . f)
 
 w1 = contramap (length :: [a] -> Int) (Predicate even)

@@ -274,3 +274,5 @@ a'' = do gen <- getStdGen
 x6 = randomIO :: IO Int
 a''' = x6 >>= print
 
+-- for /dev/urandom based seeding
+-- initStdGen

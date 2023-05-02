@@ -173,9 +173,7 @@ catalan' n = table !! n
 
 -- How does this work?
 -- table  -->> [1, table !! 0, table !! 0 * table !! 1 + table !! 1 * table !! 0, ..., table !! 0 * table !! (n-1) + ...]
--- This list is finite and may take space from O(n log n) (for normal forms) to  O(n^3 log n) (for thunks).
--- Practically, the space consumed is close to O(n log n) since each thunk is evaluated at its first usage and
--- then just the value is stored.
-
+-- This list is finite and takes space O(n^2) (for normal forms; notice that catalan n = O(4^n)); each thunk is evaluated
+-- at its first usage (since (!!) is lazy in its first argument) and then just the value is stored.
 
 

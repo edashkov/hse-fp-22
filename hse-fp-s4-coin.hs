@@ -20,7 +20,7 @@ trj_length k xs = fromIntegral len + trj_length k' (drop (k * len) xs)
                         ls = group k xs
 
 avg_trj_length :: Int -> Int -> IO Double
-avg_trj_length num n = do gens <- sequence . replicate num $ newStdGen
+avg_trj_length num n = do gens <- sequence . replicate num $ initStdGen
                           let xss = map (randomRs (0, 1) :: StdGen -> [Int]) gens
                           let lens = map (trj_length n) xss
                           return (fromIntegral (sum lens) / fromIntegral (num))

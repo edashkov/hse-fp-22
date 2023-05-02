@@ -21,7 +21,6 @@ main = do args <- getArgs
             hPutStrLn stderr "Error!"
            else do let n = read $ head args
                    s <- getContents
-                   let m = n + 1
                    putStr $ encode n s
 -- the last do-block's behavior may be not obvious;
 -- see hse-fp-l4-q-unsafe* for further discussion.
