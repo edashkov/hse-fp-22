@@ -1,6 +1,6 @@
 -- Eratosthenes' Sieve
 sieve :: [Integer] -> [Integer]
---sieve [] = []
+---sieve [] = []
 sieve (x:xs) = x : sieve [ y | y <- xs, y `mod` x /= 0]
 
 primes = sieve [2..]

@@ -17,7 +17,7 @@ myList = [1,2,3] :: [Int]
 f2 = f1 f1 (+) (*) div 
 ab'c = f2 5 (-7)
 
--- abc = 5 
+--abc = 5 
 --f3 = \x -> x x
 --n4abc = f2 5 -7
 --A = 7
@@ -28,7 +28,6 @@ gh2 = x^2
 --where x = 3
  where x = 3 
 {-- Notice the indent! --}
-
 
 u = u
 v = f1 124 u
@@ -48,7 +47,7 @@ x2 = undefined :: Bool
 x3 = True && x2
 x4 = False && x2
 
-z = if (&&) ((x || (not y)) && x) (not y) then x else y
+z x y = if (&&) ((x || (not y)) && x) (not y) then x else y
 myAnd = \x y -> if x then y else x
 x' = True `myAnd` False :: Bool
 
@@ -62,8 +61,8 @@ v0 = putChar c2
 {-- Int (from [-2^63..2^63-1]) and Integer --}
 
 n0 = 3 :: Int
-n0' = 3
-n1 = (-2)
+n0' = (-3)
+n1 = 3 
 n2 = n0 + n1
 
 mb1 = maxBound :: Int

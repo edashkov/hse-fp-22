@@ -6,7 +6,9 @@ module Main (main) where
 -- standard Prelude is imported by default;
 -- to redefine its exports, it is recommended
 -- to import it qualified 
-
+-- -- import qualified Prelude as P
+-- or just explicitly import nothing
+-- -- import Prelude () 
 
 -- the function both is now available by its qualified aliased name U.both
 import qualified Misc.Utils as U (both)

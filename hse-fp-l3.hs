@@ -595,6 +595,12 @@ getRec (MkRec f) = f
 myY = \f -> let g = \x -> f (getRec x x) in 
                 g (MkRec g)
 
+-- one can also implement typeable combinators similar
+-- to \omega_2 and \Omega
+omega_2 = \x -> getRec x x
+_Omega = omega_2 (MkRec omega_2)
+_Omega' = myY id
+
 -- this combinator is usable
 myFac = myY $ \fac n -> if n <= 0 then 1 else n * fac (n - 1)
 m15 = myFac 4

@@ -141,7 +141,7 @@ w3 = bimap even (replicate 3) (4,5)
 {--
 
 We have fmap :: (a -> b) -> f a -> f b, but is there a natural way to
-tranform it to fmap2 :: (a -> c -> b) -> f a -> f c -> f b? Say, for
+tranform it to fmap2 :: (a -> c -> b) -> f a -> f b -> f c? Say, for
 fmap2 (+) :: Maybe Int -> Maybe Int -> Maybe Int.
 Unfortunately, currying does not work:
 fmap (+) :: Maybe Int -> Maybe (Int -> Int)
@@ -403,6 +403,8 @@ z9 = filter'' even [1,2,4,5,6,7,11]
 z9' = do x <- [1,2,4,5,6,7,11]
          guard (even x)
          return x
+z9'' = [1,2,4,5,6,7,11] >>= (\x -> guard (even x) >> [x])
+
 
 sdiv' :: Int -> Int -> Maybe Int
 sdiv' n m = do guard (m /= 0)

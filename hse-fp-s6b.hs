@@ -87,7 +87,7 @@ is_wf' (x:xs) = do bal <- getctr
                     do case x of
                         '(' -> incctr
                         ')' -> decctr
-                        _   -> putctr bal
+                        _   -> return ()
                        is_wf' xs   
 
 is_wf :: String -> Bool
@@ -183,7 +183,7 @@ qsort' (x:xs) = do let (lesser', greater', len) = partition (<=x) xs
                    greater <- qsort' greater'
                    return $ lesser ++ [x] ++ greater
 
-partition :: (a -> Bool) -> [a] -> ([a], [a],Int)
+partition :: (a -> Bool) -> [a] -> ([a], [a], Int)
 partition p = foldr op ([], [], 0)
               where op x (ys, zs, l) | p x         = (x:ys, zs, l+1)
                                      | otherwise   = (ys, x:zs, l+1)
