@@ -355,6 +355,9 @@ instance Show Date where
 
 s1 = show d3
 
+-- Clearly, Dt :: (Int,Int,Int) -> Date might be curried to
+-- Dt :: Int -> Int -> Int -> Date. But would it be more natural?
+
 -- An alterenative style for multi-field records:
 -- the accessor functions are then defined automatically.
 data Date'' = Dt'' { day :: Int, month :: Int, year :: Int }
@@ -366,23 +369,36 @@ d102 =  Dt'' {year = 1861, day = 11, month = 02}
 
 --
 
+-- newtype X' = C X creates a 'run-time' synonym type for X:
+-- it is separate from X for the compiler but then constructor
+-- C is lifted for the sake of optimization.
 newtype Date' = Dt' (Int,Int,Int)
                 deriving (Eq,Show)
 
 d5 = Dt' (2,4,2018)
 
+-- Just one construtor for newtypes:
 --newtype Color = Red Int | Green Int | Blue Int
+
+-- Just one argument for that constructor:
+--newtype Color = RGB Int Int Int
+
+-- So, one could just uncurry it:
+newtype Color = RGB (Int,Int,Int)
+
 
 -- Parametric records
 
 data Triplet a b c = Triplet a b c
+
+--data (,,) a b c = (a,b,c)
 
 m8 = Triplet 8 "Product" [1,2,3]
 
 -- the most primitive product type ("record")
 
 -- "a * b"
---data (,) a b = (,) a b
+--data (,) a b = (a,b)
 
 m8a = (2,'2') :: (Int,Char)
 
@@ -397,6 +413,7 @@ data NumsNchars = Number Int | Character Char
 
 m9 = Number 17
 m10 = Character 'U'
+-- in general, one cannot compare an Int to a Char.
 m11 = m9 == m10
 
 -- one can easily take a sum of products in ONE type definition:
@@ -460,6 +477,8 @@ mb0 = (infty == infty')
 n1 = S (S (S Z))
 n2 = S (S Z)
 
+-- {Z == Z = True; Z == S _ = False; S _ == Z = False; S x == S y = x == y)
+-- S x <= S y = x <= y
 b4 = n2 < n1
 
 int2nat :: (Integral a) => a -> Nat
@@ -517,7 +536,8 @@ instance Num Nat where
     abs = id
     fromInteger = int2nat
 
-n5 = (n1 * n2) + (nfac n3)
+-- notice the use of literals; it is due to fromInteger, abs and negate
+n5 = (n1 * n2 * 12) + (nfac n3) + (-3)
 
 
 {-- Parameters --}
@@ -553,8 +573,8 @@ infBranchedR = Node Nil 1 infBranchedR
 infBranchedL = Node infBranchedL 1 Nil
 
 -- 'mutual coinduction'
-inf1 = Node inf1 3 inf2
-inf2 = Node inf2 5 inf1
+inf1 = Node inf2 3 inf1
+inf2 = Node inf1 5 inf2
 
 mb1 = infBranchedR == infBranchedL
 mb2 = infBranchedR == infBranchedR
@@ -567,6 +587,7 @@ ms2 = take 100 $ show infBranchedL
 -- data [a] = [] | a : [a]
 
 -- a type clearly isomorphic to lists:
+-- (infixr specifies :+ as infix and right-associative)
 infixr :+
 -- an infix constructor must begin with :
 data MyL a = Nl | a :+ (MyL a)
@@ -588,6 +609,12 @@ myY :: (a -> a) -> a
 -- trick in Coq.
 newtype Rec a = MkRec (Rec a -> a)
 getRec (MkRec f) = f
+
+-- Indeed, MkRec works miracles: it maps an extractor
+-- from Rec a to Rec a. This is like being able to
+-- transform a procedure of extracting $100 from a
+-- wallet that contains that much (I am sure you have
+-- such a procedure) to such a wallet.
 
 -- the polymorphic functions MkRec and getRec provide
 -- an isomorphism between Rec a -> a and Rec a for any a.
@@ -618,6 +645,11 @@ myFac' = fix $ \fac n -> if n <= 0 then 1 else n * fac (n - 1)
 m16 = myY (2:)
 -- is the same as
 m16' = (2:) m16'
+
+-- S :: Nat -> Nat
+-- the 'infinite natural':
+infty'' = myY S
+
 
 -- if there are many such x's, not the one we like 
 -- may be computed: say, myY (*3) diverges and does
