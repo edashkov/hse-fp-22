@@ -38,7 +38,7 @@ import System.Random
 
 -- Basically, we want to introduce some terms that represent
 -- IO subroutines (such terms are known as (IO) 'actions').
--- At the lowest level, we shall have a set of 'black box' terms
+-- At the lowest level, we shall have a set of 'black-box' terms
 -- for elementary operations which are  provided by the system
 -- (e.g., 'to read a character from stdin'). We want to be able to
 -- combine such elementary operations into imperative style subroutines,
@@ -49,7 +49,8 @@ import System.Random
 -- use IO ().
 
 -- In reality, IO a is a primitive implemented at the system level.
--- However, we can imagine it to be like
+-- However, we can imagine (and formally descibe to some extent) it
+-- to be like
 
 -- type IO a = World -> (World, a) 
 
@@ -58,6 +59,11 @@ import System.Random
 
 -- NOTICE: in fact, we are NOT going to supply any World argument to
 -- a term of the type (IO a) since this "argument" is out of our scope.
+-- However one can imagine such an argument provided automatically
+-- during the run time, so that 'executing'
+--      x <- act :: IO a
+-- boils down to computing something like
+--      (new_state_of_the_world, x) <- act current_state_of_the_world
 
 a1 = getChar :: IO Char
 -- read the current symbol from stdin; 'return' it;

@@ -515,17 +515,20 @@ m14 = nadd' (int2nat 5)
 m14a = foldn (1:) [] infty
 
 
--- Cf. the iterative construction for prdecessor 
+-- Cf. the iterative construction for predecessor 
 -- from the untyped lambda calculus
 npred = snd . foldn (\(n,_) -> (S n, n)) (Z,Z)
 
 nmlt m =  snd . (foldn (\(l, y) -> (l, nadd y l)) (m,Z))
 
--- direct iteration pure lambda style
+-- direct iteration pure-lambda style
 nmlt' n m = foldn (foldn S m) Z n
 
 nfac = snd . foldn (\(n,x) -> (S n, nmlt (S n) x )) (Z, S Z)
 
+-- in general, foldn transforms our Peano-style numerals
+-- into Church-style ones:
+-- _n_Church = \f x -> foldn f x _n_Peano
 
 instance Num Nat where
     n + m = nadd n m
