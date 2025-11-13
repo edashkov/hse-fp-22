@@ -15,6 +15,8 @@ import qualified Misc.Utils as U (both)
 -- everything else requires the full prefix Misc.Utils;
 -- this prevents ambiguities and namespace pollution
 import qualified Misc.Utils
+-- this Misc prefix gives us a (relative) path to the module, so it is
+-- required.
 
 -- do not import myTree2 despite its being exported by module tree
 import Tree hiding (myTree2)
@@ -100,6 +102,9 @@ x8 = myTree1
 x10 = Data.Char.ord 'Y'
 -- only qualified version is allowed
 --x11 = ord 'Y'
+
+-- this works in GHCi but does not compile
+--x11' = Data.Char.chr 77
 
 x12 = L.union "qwerty" "Haskell"
 -- not in scope; only the alias qualified name is available 

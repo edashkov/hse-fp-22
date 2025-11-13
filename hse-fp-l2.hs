@@ -1,4 +1,4 @@
-import GHC.Float
+import GHC.Float (float2Double)
 -- for float2Double
 
 {-- Declarative programming---making equations  --}
@@ -23,7 +23,7 @@ ab'c = f2 5 (-7)
 --A = 7
 
 {-- let in --}
-gh1 = let x = 3 in x^2
+gh1 = let x = 3; y = 2 in x^2
 gh2 = x^2 
 --where x = 3
  where x = 3 
@@ -61,13 +61,16 @@ v0 = putChar c2
 {-- Int (from [-2^63..2^63-1]) and Integer --}
 
 n0 = 3 :: Int
-n0' = (-3)
+--n0' :: Num a => a
+n0' = (-3) 
 n1 = 3 
 n2 = n0 + n1
 
 mb1 = maxBound :: Int
 --mb2 = maxBound :: Integer
 mb3 = minBound :: Int
+
+mb4 = minBound + n0
 
 n3 = 2^63
 n4 = 2^63 :: Int
@@ -169,8 +172,8 @@ bl4 = (1,2) < (1,3)
 bl5 = "Are" < "Arena"
 
 s4 = show 15
---n10' = read "16"
-n10 = read "16"
+n10' = read "qwerty" :: Int
+n10 = read "16.1"
 
 n11 = n10 - read s4
 
@@ -178,7 +181,7 @@ n11 = n10 - read s4
 
 af1 :: (a -> b -> c) -> (a -> b) -> a -> c
 af1 = \x y z ->  x z (y z)
---af2 :: (Num a) => (a -> a) -> a -> a 
+af2 :: (Num a) => (a -> a) -> a -> a 
 af2 = af1 (+)
 af3 = af2 id
 af4 = af2 (\x -> (3 * x + 1)^2)
@@ -196,8 +199,8 @@ bf0 = \b -> case b of
                  False -> "no"
 
 bf0' b = case b of
-                 True -> "yes"
-                 _ -> "no"
+                 True -> "ayes"
+                 _ -> "ano"
 
 bf0'' = \b -> if b then "yes" else "no"
 
@@ -210,20 +213,21 @@ bf1 n = case n of
             1           -> 5
             2           -> 4
             3           -> 3
-            otherwise -> 2018
+            otherwise -> 2018 + otherwise
 
 -- Guards are allowed here to specify patterns further.
 -- See Haskell Report, 3.13.
 bf1' n = case n of
             1              -> 5
 -- testing a Boolean expression for being True after we know n = 2 
-            2 | 2*n == 4   -> 4
+            2 | 2*n == 5   -> 4
+              | 2*n == 4   -> 7
 -- matching n with 4 (which fails) after we know n = 3 
             3 | 4 <- n     -> 3
 -- 'otherwise' here is a local 'VARIABLE', not the defined term being equal
 -- to True (this term is shadowed in this context);
 -- mathcing with a variable always succedes so we have the desired effect we
--- quite (misleadingly) signify with this name.
+-- (quite misleadingly) signify with this name.
             others_may_be_wiser -> 2018 + others_may_be_wiser
 
 bf2 :: Int -> Int
@@ -239,15 +243,15 @@ bf3 = \n -> if n < 0 then 3 else if n > 0 then 2 else (-6)
 
 bf4 :: (Int,Char) -> Int
 bf4 x = case x of 
-            (4,_)   -> 18
             (_,'u') -> 19
+            (4,_)   -> 18
 --            (4,'v') -> (-1)
             (5,'A')   -> 12
             
 
 bf5 :: [Int] -> [Int]
 bf5 [] = []
-bf5 [_,2,_] = [-2]
+bf5 [_,2,z] = [z - 2]
 bf5 [1,3,7] = [(-1)]
 -- as-pattern binds a local 'variable' to the expression being matched
 bf5 list@(x:xs) = x * sum xs : list
@@ -263,9 +267,9 @@ bf7 :: (a,b) -> (a,(a,b))
 bf7 (x,y) = (x,(x,y))
 
 {-- Matching in lambda --}
-bf7' = \(x, y) -> (x,(x,y))
+bf7' = \(x, y) ->  x -- (x,(x,y))
 
-bf7'' = \p@(x,_) -> (x, p)
+bf7'' = \p@(x,_) -> x -- (x, p)
 
 {- A type synonym  -}
 type Triple a = (a,a,a)
@@ -358,7 +362,8 @@ odd' n = even' (n - 1)
 length' :: [a] -> Int
 length' [] = 0
 -- (:) binds weaker than a function application
-length' (x : xs) = 1 + length' xs
+length' (_ : xs) = 1 + length' xs
+
 
 -- (:) binds stronger than =
 last' :: [a] -> a

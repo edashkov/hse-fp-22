@@ -7,17 +7,15 @@ import System.Environment
  --}
 
 group :: Int -> [Int] -> [[Int]]
-group n xs = take n xs : (group n $ drop n xs)
+group n xs = ys : (group n zs)
+             where (ys,zs) = splitAt n xs
 
 trj_length :: Int -> [Int] -> Integer
 trj_length 0 _ = 0
 trj_length k xs = fromIntegral len + trj_length k' (drop (k * len) xs)
-                  where k' = k - heads_ctr (head other)
+                  where k' = k - sum (head other)
                         len = 1 + length tailss
-                        (tailss, other) = break p ls
-                        p = \l -> 0 /= heads_ctr l
-                        heads_ctr = sum . take k
-                        ls = group k xs
+                        (tailss, other) = span ((0 ==) . sum) . group k $ xs
 
 avg_trj_length :: Int -> Int -> IO Double
 avg_trj_length num n = do gens <- sequence . replicate num $ initStdGen

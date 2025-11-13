@@ -1,6 +1,6 @@
 {-- More practice with lists  --}
 -- For ord :: Char -> Int
-import Data.Char
+import Data.Char (ord,chr)
 
 l0 = [1,2,3,4,5]
 
@@ -32,7 +32,7 @@ factors :: Int -> [Int]
 factors n = [x | x <- [1..n], n `mod` x == 0]
 
 primes :: [Int]
-primes = [x | x <- [2..], length (factors x) == 2 ]
+primes = [x | x <- [2..], factors x == [1,x] ]
 
 nPrime n = primes !! n
 
@@ -48,7 +48,7 @@ l7' = zip l1 l2
 positions :: (Eq a) => a -> [a] -> [Integer]
 positions x xs = [i | (y,i) <- zip xs [0..], y == x]
 
-scalprod :: [Int] -> [Int] -> Int
+--scalprod :: [Int] -> [Int] -> Int
 scalprod xs ys = sum [ a*b | (a,b)  <- (zip xs ys)]
 
 twins :: [(Int,Int)]
@@ -103,18 +103,18 @@ l3a = dropWhile isPrime [2,3,5,19,7,23,91,17,13,31]
 
 --
 
-foldr' :: (a -> b -> b) -> b -> [a] -> b
-foldr' f x [] = x
-foldr' f x (y:ys) = f y (foldr' f x ys)
+foldr_ :: (a -> b -> b) -> b -> [a] -> b
+foldr_ f x [] = x
+foldr_ f x (y:ys) = f y (foldr_ f x ys)
 
-foldl' :: (b -> a -> b) -> b -> [a] -> b
-foldl' f x [] = x
-foldl' f x (y:ys) = foldl' f (f x y)  ys
+foldl_ :: (b -> a -> b) -> b -> [a] -> b
+foldl_ f x [] = x
+foldl_ f x (y:ys) = foldl_ f (f x y)  ys
 
 l4a = [1,2,3]
 
-n0 = foldr' (+) 0 l4a
-n1 = foldl' (+) 0 l4a
+n0 = foldr_ (+) 0 l4a
+n1 = foldl_ (+) 0 l4a
 
 n2 = foldr (\u v -> u^v) 2 l4a
 n3 = foldl (\u v -> u^v) 2 l4a
@@ -122,10 +122,10 @@ n3 = foldl (\u v -> u^v) 2 l4a
 l5 = scanr (\u v -> u^v) 2 l4a
 l6a = scanl (\u v -> u^v) 2 l4a
 
-scanr' :: (a -> b -> b) -> b -> [a] -> [b]
-scanr' f x [] = [x]
-scanr' f x (y:ys) = f y (head z) : z
-                where z = scanr' f x ys
+scanr_ :: (a -> b -> b) -> b -> [a] -> [b]
+scanr_ f x [] = [x]
+scanr_ f x (y:ys) = f y (head z) : z
+                where z = scanr_ f x ys
 
 listid :: [a] -> [a]
 listid = foldr (:) []
@@ -145,7 +145,7 @@ l7a = take 10 (iterate (^2) 3)
 l8a = take 10 (iterate (*2) 1)
 
 iterate' :: (a -> a) -> a -> [a]
-iterate' f x =  scanl (\u _ -> f u) x [0..]
+iterate' f x =  scanl (\u _ -> f u) x (repeat 0)
 
 -- replicate; repeat
 --
@@ -198,4 +198,38 @@ itcomp'' n  = compose . (replicate n)
 
 --
 
+splitAt' _ [] = ([],[])
+splitAt' n xs | n <= 0 = ([],xs)
+splitAt' n (x:xs) = (x:p, s)
+                    where (p,s) = splitAt' (n-1) xs 
+
+splitAt'' n  = foldr (\(i,x) pair -> if i <= n then (x:fst pair,snd pair) else ([],x:snd pair)) ([],[]) . zip ([1..] :: [Int])
+
+-- notice that length is based on foldl'; hence it never overflows.
+-- Morover, these length-based implementation work DO NOT store
+-- the whole list in memory, as length;
+
+-- Also, library functions are compiled to object code, while GHCi 'compiles' things
+-- to some intermediate bytecode by default; one can try changing this with
+-- > :set -fobject-code
+-- (you can notice an *.o file generated as a result).
+halve0 xs = splitAt (length xs `div` 2) xs
+halve1 xs = splitAt' (length xs `div` 2) xs
+halve2 xs = splitAt'' (length xs `div` 2) xs
+
+{- In theory, halve3 may be twice faster than halve0 (at least than halve2) as
+ - it traverses the list xs just once. In fact, it is MUCH worse than halve0
+ - since we HAVE to run over the whole list until we know len; before that moment,
+ - we cannot decide between the branches of if, hence we have to store a giant
+ - thunk in the memory: 
+ - foldr f ([],[],0) [(1,'a'),(2,'b'),(3,'c')] = 
+ -  if 1 <= len then ('a':p,s,len) else ([],'a':s,1+len)
+ -    where (p,s,len) = if 2 <= len' then ...
+ - This readily overflows the stack.
+ -}
+halve3 xs = (p,s) where
+            helper :: [a] -> ([a],[a],Int)
+            f (i,x) = \(p,s,len) -> if i <= len then (x:p,s,len) else ([],x:s,1+len)
+            helper = foldr f ([],[],0) . zip ([1..] :: [Int])
+            (p,s,_) = helper xs
 

@@ -29,6 +29,9 @@ getCh = do hSetEcho stdin False
 
 play :: String -> IO ()
 play word = do putStr "? "
+               hFlush stdout
+               -- otherwise ? is 'buffered' to a wrong position (in a standalone app; apparently
+               -- ghci flushes itself).
                guess <- getLine
                if guess == word then
                 putStrLn "You got it!"

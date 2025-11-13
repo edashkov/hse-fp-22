@@ -105,6 +105,7 @@ class Contravariant (f :: * -> *) where
     contramap :: (a -> b) -> (f b -> f a)
 --}
 
+-- contramap id = id
 -- contramap (g . f) = contramap f . contramap g
 
 -- newtype Predicate a = Predicate {getPredicate :: a -> Bool}
@@ -141,7 +142,7 @@ w3 = bimap even (replicate 3) (4,5)
 {--
 
 We have fmap :: (a -> b) -> f a -> f b, but is there a natural way to
-tranform it to fmap2 :: (a -> c -> b) -> f a -> f b -> f c? Say, for
+tranform it to fmap2 :: (a -> b -> c) -> f a -> f b -> f c? Say, for
 fmap2 (+) :: Maybe Int -> Maybe Int -> Maybe Int.
 Unfortunately, currying does not work:
 fmap (+) :: Maybe Int -> Maybe (Int -> Int)
@@ -171,6 +172,8 @@ Such a combinator could automatically give us fmap2, fmap3, etc.
 --Nothing <*> _ = Nothing
 --(Just g) <*> fx = fmap g fx
 
+-- (<$>) = fmap
+-- g <$> fx = pure g <*> fx
 n3 = pure (+) <*> Just 2 <*> Just 3
 n3' = (+) <$> Just 2 <*> Just 3
 n4 = pure (+) <*> Just 2 <*> Nothing
@@ -223,7 +226,7 @@ scsum xs ys = sum . getZipList $ (*) <$> Z xs <*> Z ys
 
 --instance Applicative ((->) a) where
 ---- pure :: b -> (a -> b)
----- <*> :: (a -> b -> c) -> (a -> b) -> (a -> c)
+---- <*> :: (a -> (b -> c)) -> ((a -> b) -> (a -> c))
 --   pure x = \_ -> x
 --   h <*> g = \x -> h x (g x)
 
@@ -269,7 +272,7 @@ sequenceA' (fx : fxs) = pure (:) <*> fx <*> sequenceA' fxs
 
 x12 = sequenceA [Just 1, Just 2, Just 3]
 x12' = sequenceA' [Just 1, Just 2, Just 3]
-x13 = sequenceA [Just 1, Nothing, Just 3]
+x13 = sequenceA [Just 1, Nothing, undefined]
 
 x14 = sequenceA [[1,2,3]]
 x15 = sequenceA [[1,2,3],[4,5]]
@@ -390,7 +393,7 @@ z8''' = [(),()] >> [4,5]
 
 -- guard
 -- roughly speaking, consider a monoid structure on a monad (MonadPlus)...
--- assume mempty >>= mx = mempty (as we have for [] and Maybe)
+-- assume mempty >>= f = mempty and mx >>= mempty = mempty (as we have for [] and Maybe)
 
 -- guard :: Bool -> m ()
 -- guard True = return ()
@@ -433,7 +436,7 @@ filterM' p (x:xs) = do b <- p x
                        ys <- filterM' p xs
                        return (if b then x:ys else ys)
 
-z10 = [[2,3],[5],[1,2],[3],[],[4,7],[1]] :: [[Int]]
+z10 = [[2,3],[5],[1,2],[3],[7],[4,7],[1]] :: [[Int]]
 
 shead :: [a] -> Maybe a
 shead xs = do guard $ not (null xs)

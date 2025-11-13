@@ -23,9 +23,9 @@ z3 = (^2) . id
 --    mconcat = foldr mappend mempty
 
 -- The following laws are expected but not enforced:
--- x `mappend` mempty = x
--- mempty `mappend` x = x
--- x `mappend` (y `mappend` z) = (x `mappend` y) `mappend` z 
+-- x <> mempty = x
+-- mempty <> x = x
+-- x <> (y <> z) = (x <> y) <> z 
 
 
 --instance Monoid [a] where

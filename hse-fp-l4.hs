@@ -49,7 +49,7 @@ import System.Random
 -- use IO ().
 
 -- In reality, IO a is a primitive implemented at the system level.
--- However, we can imagine (and formally descibe to some extent) it
+-- However, we can imagine (and formally describe to some extent) it
 -- to be like
 
 -- type IO a = World -> (World, a) 
@@ -63,7 +63,10 @@ import System.Random
 -- during the run time, so that 'executing'
 --      x <- act :: IO a
 -- boils down to computing something like
---      (new_state_of_the_world, x) <- act current_state_of_the_world
+--      (new_state_of_the_world, x) = act current_state_of_the_world
+-- with, of course, 'changing the world' effect
+--      current_state_of_the_world <- new_state_of_the_world 
+
 
 a1 = getChar :: IO Char
 -- read the current symbol from stdin; 'return' it;
@@ -170,7 +173,7 @@ myAction' a1 a2 a3 a4 a5 a6 y =
 -- It allows to 'pack' a value into an action,
 -- e.g., for passing this value to another action.
 
-a5 = getLine >>= \s -> if even . length $ s then return "even" else return "odd"
+a5 = getLine >>= \s -> return (if even . length $ s then "even" else "odd")
 
 a6 = a5 >>= putStrLn . reverse
 
@@ -179,15 +182,14 @@ a6 = a5 >>= putStrLn . reverse
 sequence' :: [IO a] -> IO [a]
 sequence' [] = return []
 sequence' (z:zs) = do x <- z
-                      xs <- sequence' zs
+                      xs <- sequence' zs                      
                       return (x:xs)
 -- and collect the resulting values to a list
 
 sequence'_ :: [IO a] -> IO ()
 sequence'_ [] = return ()
-sequence'_ (z:zs) = do x <- z
-                       xs <- sequence'_ zs
-                       return ()
+sequence'_ (z:zs) = do z
+                       sequence'_ zs                      
 -- ...or discard those values.
 
 -- print = putStrLn . show
@@ -195,7 +197,7 @@ f3 = sequence (map print [1,2,3,4,5])
 f3' = sequence' (map print [1,2,3,4,5])
 f3'' = sequence_ (map print [1,2,3,4,5])
 f3''' = sequence'_ (map print [1,2,3,4,5])
--- mapM is map + sequence 
+-- mapM = sequence . map
 f4 = mapM print [1,2,3,4,5]
 f4' = mapM_ print [1,2,3,4,5]
 
@@ -270,15 +272,33 @@ a' = do gen <- getStdGen
         putStrLn $ take 16 (randomRs ('A','z') gen')
         putStrLn $ take 16 (randomRs ('A','z') gen'')
 
+ai = do gen <- getStdGen
+        print $ take 32 (randomRs (1,10) gen :: [Int])
+        let (gen',gen'') = split gen
+        print $ take 16 (randomRs (1,10) gen' :: [Int])
+        print $ take 16 (randomRs (1,10) gen'' :: [Int])
 
-a'' = do gen <- getStdGen
+
+
+a'' = do gen <- newStdGen
          putStrLn $ take 16 (randomRs ('A','z') gen)
-         gen' <- newStdGen
+         gen' <- getStdGen
          putStrLn $ take 16 (randomRs ('A','z') gen')
 
--- reseeding and generating combined
+-- reseeding and generating combined;
+-- similar to C-style random()
 x6 = randomIO :: IO Int
 a''' = x6 >>= print
 
--- for /dev/urandom based seeding
--- initStdGen
+{-
+ - for /dev/urandom based seeding, use initStdGen;
+ - notice it doesn't update the global generator;
+ - one can explicitly set it with setStdGen however.
+ -}
+
+a_ = do gen <- initStdGen
+        putStrLn $ take 16 (randomRs ('A','z') gen)
+        gen' <- getStdGen
+        putStrLn $ take 16 (randomRs ('A','z') gen')
+
+

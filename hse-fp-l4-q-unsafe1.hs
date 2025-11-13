@@ -7,7 +7,7 @@ main = putStrLn "I will change your lines' symbols to 'A' (press CTRL+D when get
            getContents >>= putStrLn . map (\c -> if c == '\n' then c else 'A')
 
 {--
- The IO is getContents is LAZY (the so-called 'unsafe IO' is used in this function's
+ The IO in getContents is LAZY (the so-called 'unsafe IO' is used in this function's
  implementation). It means that each symbol is read only when it is explicitly 'ordered' by
  the right-hand side of >>=. By default, putStrLn applies 'Line Buffering', that is,
  it waits for a newline before it begins printing symbols. As we have kept the newlines

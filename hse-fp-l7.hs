@@ -47,7 +47,7 @@ comp1 = let (_,st1) = push' 11 []    -- [11]
 
 -- We have lots of 'boilerplate' code here and an obvious
 -- challenge of 'chaining' the opertaions via the temporary
--- variable st1,..,st9. Can we call monads in? 
+-- variables st1,..,st9. Can we call monads in? 
 
 -- Surely!
 
@@ -86,8 +86,8 @@ instance Monad (State s) where
 -- (>>=) :: m a -> (a -> m b) -> m b
 -- (>>=) :: State s a -> (a -> State s b) -> State s b
 
-t >>= f = \st -> let (x', st')  = runState t st 
-                    in runState (f x') st'
+t >>= f = state $ \st -> let (x', st')  = runState t st 
+                     in runState (f x') st'
 
 --}
 
@@ -153,7 +153,7 @@ myStack = put [6,-8,3] :: State Stack ()
 
 -- Explicitely modify the state.
 -- modify :: (s -> s) -> State s ()
--- modify f = state $ \st -> ((), f s)
+-- modify f = state $ \st -> ((), f st)
 
 -- compute (x + y^2) `mod` z for a stack (x:y:z:_);
 -- keep the stack as (z:_)
@@ -196,15 +196,16 @@ mult'' = do x <- pop''
 -- is natural for compiler development.
 
 data Tm = Val Int | Add Tm Tm | Mlt Tm Tm
+    deriving (Show)
 
 eval' :: Tm -> State Stack ()
 eval' (Val n) = push'' n
 -- compute the first argument first
--- init_stack --> val(t1) : init_stack --> val(t2) : val (t1) : init_stack --> val(t2) + val(t1) : init_stack
-eval' (Add t1 t2) = eval' t1 >> eval' t2 >> add''
-eval' (Mlt t1 t2) = eval' t1 >> eval' t2 >> mult''
+-- init_stack --> val(t2) : init_stack --> val(t1) : val (t2) : init_stack --> val(t1) + val(t2) : init_stack
+eval' (Add t1 t2) = eval' t2 >> eval' t1 >> add''
+eval' (Mlt t1 t2) = eval' t2 >> eval' t1 >> mult''
 
--- eval' t is an abstract representation of the term's t semantics
+-- eval' t is an abstract representation of term's t semantics
 
 eval :: Tm -> Int
 eval t = evalState  (eval' t >> pop'') []
@@ -217,7 +218,7 @@ myTm1 = Mlt (Add (Val 9) (Mlt (Val 2) (Val 3))) (Add (Val 4) (Val (-6)))
 --- Writer Monad
 ---
 
--- While State s a is essetially s -> (a,s), we may be sometimes 
+-- While State s a is essentially s -> (a,s), we may be sometimes 
 -- happy with just (a,s) -- where the state is updated but never read
 -- (like it is typical in logging)
 

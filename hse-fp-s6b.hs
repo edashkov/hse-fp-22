@@ -1,4 +1,5 @@
 import Control.Monad
+import Control.Monad.ListM (sortByM)
 import System.Random
 
 {-- A (limitedly) useful monad --}
@@ -19,8 +20,10 @@ newtype Upd a = U {getUpd :: Ctr -> (Ctr,a)}
 
 instance Functor Upd where
 --fmap :: (a -> b) -> (Upd a) -> (Upd b)
---    fmap f (U g) = U $ (\(c,x) -> (c, f x)) . g
-     fmap f (U g) = U $ fmap f . g
+    fmap f (U g) = U $ (\(c,x) -> (c, f x)) . g
+
+-- the same with Functor ((,) Ctr)
+--     fmap f (U g) = U $ fmap f . g
 
 --    fmap = liftM      
 
@@ -39,6 +42,7 @@ instance Monad Upd where
     (U f) >>= g = U $ \c -> let
                              (c',x)   = f c
                             in getUpd (g x) c'
+
 ----
 
 incctr :: Upd ()
@@ -72,7 +76,7 @@ x3 = usectr 2 (incctr >> modctr (*12) >> decctr >> getctr)
 ----
 
 {- Some parser: test a string if it is
- - "well-formed" vi calculacting its
+ - "well-formed" via calculacting its
  - bracket balance.
  -}
 
@@ -188,4 +192,27 @@ partition p = foldr op ([], [], 0)
               where op x (ys, zs, l) | p x         = (x:ys, zs, l+1)
                                      | otherwise   = (ys, x:zs, l+1)
 
-               
+-- Can we avoid modifying the sorting algorithm internals
+-- when counting comparison?
+-- Surely!
+-- Yet this requires a monadic version of sort (or sortBy) as monadlist library
+-- provides. Indeed, the sort routine must chain effects (>>=) internally.
+
+-- It seems that monadic versions are *strictly* more general. Clearly, one can
+-- emulate the pure version with the Identity monad. On the other hand, if there
+-- were a way to 'lift' an arbitrary sorting function to an arbitrary monad, then
+-- an effect might reveal some implementation details of sorting (say, the elements
+-- being compared to each other), which may differ for different algorinthms.
+-- This would violate the 'referential transparency' principle implying that any two
+-- extensionally equal PURE functions must be interchangable in terms of extensional
+-- equality. Indeed, one could then obtain
+--  reveal . lift sort1 $ [1..100] /= reveal . lift sort2 $ [1..100]
+-- whereas
+--  sort1 [1..100] == sort2 [1..100]
+
+compareUpd :: (Ord a) => a -> a -> Upd Ordering
+compareUpd x y = incctr >> return (compare x y)
+
+w1 = trace (sortByM compareUpd) [10,5,3,1,8,5,0,2,7,5,1,7,7,41,0,5,2,6,9,1]
+
+      

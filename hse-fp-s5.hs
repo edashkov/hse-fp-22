@@ -36,6 +36,14 @@ y1 = seq undefined ((\_ -> 3) undefined)
 y2 = (\_ -> 3) $! undefined
 -- f $! x = seq x (f x)
 
+-- Notice that seq reduces its first argument
+-- to a weak normal form, i.e., to a 'true' normal
+-- form, a constructor application or a lambda.
+
+y3 = (undefined:undefined) `seq` 2025
+y4 = (undefined,undefined) `seq` 2025
+y5 = (\_ -> undefined) `seq` 2025
+
 x8a = foldr (|!|) False x5
 -- stack overflow, no 'undefined' exception!
 -- x8a --> True |!| (foldr (|!|) False [False, undefined..]) -->
@@ -100,6 +108,13 @@ x11 = foldl (+) 0 bigList
 --                             +99999998
 -- this can fit the heap yet is too large for the stack!
 
+{-
+ - One can ask why the heap is not freed of the numbers during recursive calls of +,
+ - so that the stack may utilize the space freed. Apparently, this is due to GHCI
+ - cashing this thunk. Indeed, when compiling a similar stand-alone code, one
+ - gets either a computation complete or a process killed by the OOM with no clear
+ - stack overflow (SIGSEGV).
+ -}
 
 -- But we can reduce the first argument at every foldl recursion step!
 -- foldl' does exactly that:
@@ -127,6 +142,16 @@ x14 = foldl (\|) False [undefined, True]
 -- NO WAY!
 
 -- foldr is the genuine structural recursion on lists and is capable of proceeding infinite lists (unlike foldl and foldl').
+
+-- There may be a substantial efficiency difference between the two (with either one being better):
+concatr :: [[a]] -> [a]
+concatr = foldr (++) []
+sr = sum . concatr $ replicate 10 [1..10000000]
+
+-- foldr is more effective here
+concatl :: [[a]] -> [a]
+concatl = foldl' (++) []
+sl = sum . concatl $ replicate 10 [1..10000000]
 
 -- foldl implicitly reverses a list unlike foldr:
 x15 = foldl (flip (:)) [] "qwerty"

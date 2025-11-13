@@ -12,7 +12,7 @@ lazySequence [] =  return []
 lazySequence (x:xs) = do r <- x
                          rs <- unsafeInterleaveIO $ lazySequence xs
                          return (r:rs)
--- (unsafeInterleaveIO a) in the same action as a itself but it is performed
+-- (unsafeInterleaveIO a) is the same action as a itself but it is performed
 -- on demand; the order of execution of a sequence of such actions is thus
 -- hard to predict since it is governed by the 'demand' and is interleaved
 -- by executing the caller's code. For this reason, lazy IO is considered

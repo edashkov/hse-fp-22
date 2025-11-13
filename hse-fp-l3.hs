@@ -23,6 +23,8 @@ instance Eq MyType where
  Bar == Bar = True
  _ == _ = False
 
+-- _ /= _ = True
+
 {--
 class  (Eq a) => Ord a  where
     compare              :: a -> a -> Ordering
@@ -68,7 +70,7 @@ instance Show MyType where
 -- Let us set parsing on automagically
 deriving instance Read MyType
 
-m1 = read "Foo" :: MyType
+m1 = read "Foo'" :: MyType
  
 {--
 
@@ -206,7 +208,7 @@ instance Num MyType where
     signum = id
     fromInteger n = if mod n 2 == 0 then Foo else Bar
 
-m7 = Bar * (Foo + Bar)
+m7 = Bar * (Foo + Bar) + 7
 
 {--
 
@@ -310,7 +312,7 @@ data Day = Monday
           | Tuesday | Wednesday
           | Thursday | Friday
           | Saturday | Sunday
-          deriving (Eq,Ord,Show,Read)
+          deriving (Eq,Ord,Show,Read,Enum)
 
 today = Monday
 b1 = Tuesday < Friday
@@ -333,7 +335,7 @@ prev = comp 6 next
 
 d1 = next today
 d2 = prev today
-
+--
 -- Bool, Ordering
 
 {-- Records --}
@@ -411,7 +413,7 @@ m8a = (2,'2') :: (Int,Char)
 data NumsNchars = Number Int | Character Char
     deriving (Eq,Ord,Show)
 
-m9 = Number 17
+m9 = Number 85
 m10 = Character 'U'
 -- in general, one cannot compare an Int to a Char.
 m11 = m9 == m10
@@ -462,14 +464,15 @@ data Nat = Z | S Nat
 -- It is NOT true that Nat is the LEAST set of terms
 -- that contains Z and S t for its every member t.
 -- In fact, Nat is the GREATEST set that contains
--- t whenever it contains S t.
+-- t whenever it contains S t (and is also required to contain Z).
 -- That's why Nat contains the following term:
 infty = S infty 
 -- Indeed, consider the set X = {infty, S infty}. It is closed
 -- in the latter sense, whence X is a subset on Nat and infty :: Nat.
 -- The term infty is MORE than just 'undefined', for it is indeed 'infinite'
 
-infty' = S infty'
+infty' :: Nat
+infty' = infty'
 
 -- how can one prove these to 'infinities' be the same?
 mb0 = (infty == infty')
@@ -488,7 +491,7 @@ int2nat n | n < 0       = error "negative value"
 
 nadd :: Nat -> Nat -> Nat
 nadd m Z  = m
-nadd m (S n) = S (nadd n m)
+nadd m (S n) = S (nadd m n)
 
 
 n3 = nadd n1 n2
@@ -498,7 +501,7 @@ nat2int Z = 0
 nat2int (S n) = (nat2int n) + 1
 
 -- foldn transforms every natural to an iterator
--- fold f x (S (S (S Z))) = f (f (f x))
+-- foldn f x (S (S (S Z))) = f (f (f x))
 foldn :: (a -> a) -> a -> Nat -> a
 foldn f x Z = x
 foldn f x (S n) = f (foldn f x n)
@@ -606,6 +609,19 @@ ml1 = flatten infBranchedR
 -- e.g., Y-combinator is typeable with them:
 
 myY :: (a -> a) -> a
+
+-- Clearly, if one already has recursion at hand, there is
+-- an easy way to define a typeable fixed-point combinator RECURSIVELY:
+
+myOtherY :: (a -> a) -> a
+myOtherY f = f (myOtherY f)
+
+-- An infinite list of 5's
+j5 = myOtherY (5:)
+
+-- The library term fix (see below) is defined along these lines.
+-- Effectively, we are going to move this spirit of 'recursion' to the
+-- type level with otherwise 'non-recursive' Y term definition. 
 
 -- notice the negative occurence of Rec in the
 -- constructor's type. You may not do this
