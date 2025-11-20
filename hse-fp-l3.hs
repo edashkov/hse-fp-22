@@ -379,6 +379,33 @@ newtype Date' = Dt' (Int,Int,Int)
 
 d5 = Dt' (2,4,2018)
 
+-- Interestingly, in view of bottoms, Date IS NOT truly isomorphic
+-- to (Int,Int,Int) as it contains an 'extra value' undefined (a data
+-- type is thus 'lifted' over (Int,Int,Int)), which can be discerned
+-- from Dt undefined:
+
+q1 x = case x of
+        Dt _ -> 3
+
+q2 = q1 $ Dt undefined
+q3 = q1 $ undefined
+
+-- $! forces evaluating the argument to a 'weak NF' (essentially,
+-- to a constructor or a lambda)
+-- (the same effect is provided by strict patterns)
+q4 = const 3 $! Dt undefined
+
+-- To the opposite, Date' IS isomorphic and is run-time equal to (Int,Int,Int):
+
+q1' x = case x of
+         Dt' _ -> 3
+
+-- there is no Dt' in the run time.
+q2' = q1' $ Dt' undefined
+q3' = q1' $ undefined 
+
+q4' = const 3 $! Dt' undefined
+
 -- Just one construtor for newtypes:
 --newtype Color = Red Int | Green Int | Blue Int
 
@@ -562,7 +589,8 @@ myTree = Node (Node Nil 'f' Nil) 'o' (Node Nil 'o' Nil)
 {--
 -- we still have infinite objects of various forms
 -- as Tree a is the GREATEST term set closed under
--- the rule: if Node l x r \in X, then l \in X and r \in X.
+-- the rule: if Node l x r \in X, then l \in X and r \in X
+-- (and containing Nil, of course).
 
 -- The first example
 -- X1 = { myTree, Node Nil 'f' Nil, Node Nil 'o' Nil, Nil }
@@ -572,7 +600,7 @@ myTree = Node (Node Nil 'f' Nil) 'o' (Node Nil 'o' Nil)
 -- closed guarantees infBranchedR :: Tree Int
 -- (the type must be the same due to the type signature of Node;
 -- also notice that we still need a defininig equation for
--- infBranchedR unlike Nil (which is defined by data Nat)).
+-- infBranchedR unlike Nil (which is defined by data Tree)).
 --}
 
 infBranchedR = Node Nil 1 infBranchedR
