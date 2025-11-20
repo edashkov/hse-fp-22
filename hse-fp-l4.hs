@@ -130,22 +130,24 @@ putStr' (x:xs) = do putChar x
 -- These operators allow 'chaining' (or binding) actions
 -- similarly to sequencing (;) operator of imperative languages.
 
+-- Binding operators are left-associative:
 a3 = getLine >>= putStrLn >> putStrLn "Hello!"
+
+a3''' = (getLine >>= putStrLn) >> putStrLn "Hello!"
+
+-- but if we want to pass value resulting from an action
+-- to all the further actions, we need brackets:
+
+a4 = getLine >>= (\s -> putStrLn s >> putStrLn "This string reverted is:" >> putStrLn (reverse s))
+
+a3'' = getLine >>= (\s -> putStrLn s >> putStrLn "Hello!")
+
+-- This very behavior is implied by do-blocks (so they are right-associative):
 
 a3' = do s <- getLine
          putStrLn s
          putStrLn "Hello!"
 
--- Binding operators are left-associative;
--- but if we want to pass value resulting from an action
--- to all the further actions, we need a kind of right 
--- associativity
-
-a4 = getLine >>= (\s -> putStrLn s >> putStrLn "This string reverted is:" >> putStrLn (reverse s))
-
--- This very behavior is implied by do-blocks:
-
-a3'' = getLine >>= (\s -> putStrLn s >> putStrLn "Hello!")
 
 a4' = do s <- getLine
          putStrLn s
@@ -173,8 +175,14 @@ myAction' a1 a2 a3 a4 a5 a6 y =
 -- It allows to 'pack' a value into an action,
 -- e.g., for passing this value to another action.
 
+-- Namely, return x is the trivial action that does
+-- not change the world but returns x:
+-- \world -> (world,x) 
+
+a5 :: IO String
 a5 = getLine >>= \s -> return (if even . length $ s then "even" else "odd")
 
+-- A string has turned an action now.
 a6 = a5 >>= putStrLn . reverse
 
 -- Sequencing actions --
