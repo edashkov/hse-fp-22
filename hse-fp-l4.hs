@@ -195,6 +195,9 @@ sequence'_ (z:zs) = do z
 -- print = putStrLn . show
 f3 = sequence (map print [1,2,3,4,5])
 f3' = sequence' (map print [1,2,3,4,5])
+-- When 'evaluating' (in fact, 'doing') an action of type IO a,
+-- ghci calls print (= putStrLn . show) for the value returned
+-- unless a is ().
 f3'' = sequence_ (map print [1,2,3,4,5])
 f3''' = sequence'_ (map print [1,2,3,4,5])
 -- mapM = sequence . map
